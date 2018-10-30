@@ -1,4 +1,3 @@
-import Vue from 'vue';
 import { hook, restore } from './MockXMLHTTPRequest';
 
 class VueHttpRequestAdapter {
