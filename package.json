@@ -1,10 +1,29 @@
 {
   "name": "api-mock",
   "version": "1.0.0",
+  "main": "dist/index.js",
   "description": "Mock HTTP Requests ",
-  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "babel src --presets babel-preset-es2016 --out-dir dist",
+    "prepublish": "npm run build"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.3",
+    "babel-jest": "^23.6.0",
+    "babel-preset-es2016": "^6.24.1",
+    "babel-preset-es2017": "^6.24.1",
+    "babel-preset-stage-2": "^6.24.1",
+    "jest": "^22.4.4",
+    "regenerator-runtime": "^0.12.1"
+  },
+  "jest": {
+    "verbose": true,
+    "testURL": "http://test",
+    "roots": [
+      "./tests"
+    ]
   },
   "author": "adimux",
   "license": "ISC"
