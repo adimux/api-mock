@@ -33,7 +33,7 @@ class ApiMock {
     } else {
       // Otherwise, we expect 3 arguments: url, response, options which
       // we will build the options object from
-      const [url, response, opts] = options;
+      const [url, response, opts = {}] = args;
       Object.assign(options, { url, response, ...opts });
     }
 
