@@ -43,6 +43,14 @@ function asReg(routeUrl) {
   return new RegExp(`${urlReg}${QUERY_PARAMS}`);
 }
 
+function getAbsoluteUrl(url) {
+  const isAbsolute = /^[a-z][a-z0-9+.-]*:/.test(url);
+  if (!isAbsolute) {
+    return window.location + url;
+  }
+  return url;
+}
+
 class Route {
   constructor(options) {
     const { url, response, name = null, method = null } = options;
@@ -98,6 +106,7 @@ class Route {
    * @return {Object} The parameters.
    */
   extractParams(url) {
+    // const absUrl = getAbsoluteUrl(url);
     const matches = url.match(this._regex);
 
     if (matches && matches.length > 1) {

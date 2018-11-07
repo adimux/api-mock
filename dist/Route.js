@@ -66,6 +66,14 @@ function asReg(routeUrl) {
   return new RegExp('' + urlReg + QUERY_PARAMS);
 }
 
+function getAbsoluteUrl(url) {
+  var isAbsolute = /^[a-z][a-z0-9+.-]*:/.test(url);
+  if (!isAbsolute) {
+    return window.location + url;
+  }
+  return url;
+}
+
 var Route = function () {
   function Route(options) {
     _classCallCheck(this, Route);
