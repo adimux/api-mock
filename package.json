@@ -2,12 +2,17 @@
   "name": "api-mock",
   "version": "1.0.0",
   "main": "dist/index.js",
-  "description": "Mock HTTP Requests ",
+  "description": "Mock HTTP Requests",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest tests",
     "build": "babel src --presets babel-preset-es2016 --out-dir dist",
     "prepublish": "npm run build"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/adimux/api-mock.git"
+  },
+  "homepage": "https://github.com/adimux/api-mock#readme",
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.3",
