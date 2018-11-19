@@ -28,17 +28,72 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+var InterceptorsManager = function () {
+  function InterceptorsManager() {
+    _classCallCheck(this, InterceptorsManager);
+
+    this.interceptors = [];
+    this.interceptFn = null;
+  }
+
+  _createClass(InterceptorsManager, [{
+    key: 'add',
+    value: function add(interceptor) {
+      if (this.interceptFn) {
+        interceptor.setFn(this.interceptFn);
+      }
+      this.interceptors.push(interceptor);
+    }
+  }, {
+    key: 'activate',
+    value: function activate() {
+      this.interceptors.forEach(function (interceptor) {
+        if (!interceptor.active) {
+          interceptor.setup();
+        }
+      });
+    }
+  }, {
+    key: 'deactivate',
+    value: function deactivate() {
+      this.interceptors.forEach(function (interceptor) {
+        if (interceptor.active) {
+          interceptor.teardown();
+        }
+      });
+    }
+  }, {
+    key: 'setFn',
+    value: function setFn(interceptFn) {
+      this.interceptFn = interceptFn;
+      this.interceptors.forEach(function (interceptor) {
+        interceptor.setFn(interceptFn);
+      });
+    }
+  }]);
+
+  return InterceptorsManager;
+}();
+
 var ApiMock = function () {
   function ApiMock() {
     _classCallCheck(this, ApiMock);
 
-    this.activated = false;
     this.router = new _Router2.default();
-    this.interceptor = new _interceptors.AjaxInterceptor(this._interceptor.bind(this));
+    this.interceptorsManager = new InterceptorsManager();
+
+    this.interceptorsManager.add(new _interceptors.AjaxInterceptor());
+    this.interceptorsManager.setFn(this._interceptor.bind(this));
+
     this.calls = new _Calls2.default();
   }
 
   _createClass(ApiMock, [{
+    key: 'addInterceptor',
+    value: function addInterceptor(interceptor) {
+      this.interceptorsManager.add(interceptor);
+    }
+  }, {
     key: 'mock',
     value: function mock() {
       var options = {};
@@ -60,7 +115,7 @@ var ApiMock = function () {
 
       this.router.register(new _Route2.default(options));
 
-      this.activateInterceptor();
+      this.interceptorsManager.activate();
     }
   }, {
     key: 'get',
@@ -84,17 +139,10 @@ var ApiMock = function () {
       this.mock(url, response, Object.assign({}, options, { method: 'put' }));
     }
   }, {
-    key: 'activateInterceptor',
-    value: function activateInterceptor() {
-      if (!this.interceptor.active) {
-        this.interceptor.setup();
-      }
-    }
-  }, {
     key: 'setup',
     value: function setup() {
       this.reset();
-      this.activateInterceptor();
+      this.interceptorsManager.activate();
     }
   }, {
     key: 'reset',
@@ -106,9 +154,7 @@ var ApiMock = function () {
     key: 'restore',
     value: function restore() {
       this.reset();
-      if (this.interceptor.active) {
-        this.interceptor.teardown();
-      }
+      this.interceptorsManager.deactivate();
     }
   }, {
     key: 'getRoute',

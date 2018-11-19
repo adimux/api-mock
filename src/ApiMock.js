@@ -5,23 +5,63 @@ import Calls from './Calls';
 import Router from './Router';
 import Route from './Route';
 
+class InterceptorsManager {
+  constructor() {
+    this.interceptors = [];
+    this.interceptFn = null;
+  }
+  add(interceptor) {
+    if (this.interceptFn) {
+      interceptor.setFn(this.interceptFn);
+    }
+    this.interceptors.push(interceptor);
+  }
+  activate() {
+    this.interceptors.forEach((interceptor) => {
+      if (!interceptor.active) {
+        interceptor.setup();
+      }
+    });
+  }
+  deactivate() {
+    this.interceptors.forEach((interceptor) => {
+      if (interceptor.active) {
+        interceptor.teardown();
+      }
+    });
+  }
+  setFn(interceptFn) {
+    this.interceptFn = interceptFn;
+    this.interceptors.forEach((interceptor) => {
+      interceptor.setFn(interceptFn);
+    });
+  }
+}
 
 class ApiMock {
   constructor() {
-    this.activated = false;
     this.router = new Router();
-    this.interceptor = new AjaxInterceptor(this._interceptor.bind(this));
+    this.interceptorsManager = new InterceptorsManager();
+
+    this.interceptorsManager.add(new AjaxInterceptor());
+    this.interceptorsManager.setFn(this._interceptor.bind(this));
+
     this.calls = new Calls();
   }
+  addInterceptor(interceptor) {
+    this.interceptorsManager.add(interceptor);
+  }
+
   /**
    * Register a mock route.
    *
-   * @param {string} url The url to mock
-   * @param {Function|Object|Number} response The response as a status code (Number), an object
-   * containing at least `body`, or a callback function that will return a response object
-   * and receive the request as an argument.
-   * @param {Object} options Other options, like `method` to specify an HTTP method.
-   * By default any HTTP method matches.
+   * Either (url, response, options) where response can be a status code, a response object containing at least
+   * `body` or a callback function that accepts a request that returns a response object, and `options` which
+   * contains other options lie `method`.
+   *
+   * Or an object containing containing {url, response, method, ...other options}
+   *
+   * If `method` is not specified, any HTTP method will match.
    */
   mock(...args) {
     // Transform the arguments into options to create the route with
@@ -41,7 +81,7 @@ class ApiMock {
     this.router.register(new Route(options));
 
     // Activate mocking, if it's not the case already
-    this.activateInterceptor();
+    this.interceptorsManager.activate();
   }
   get(url, response, options = {}) {
     this.mock(url, response, Object.assign({}, options, { method: 'get' }));
@@ -52,14 +92,9 @@ class ApiMock {
   put(url, response, options = {}) {
     this.mock(url, response, Object.assign({}, options, { method: 'put' }));
   }
-  activateInterceptor() {
-    if (!this.interceptor.active) {
-      this.interceptor.setup();
-    }
-  }
   setup() {
     this.reset();
-    this.activateInterceptor();
+    this.interceptorsManager.activate();
   }
   reset() {
     this.router.clear();
@@ -67,9 +102,7 @@ class ApiMock {
   }
   restore() {
     this.reset();
-    if (this.interceptor.active) {
-      this.interceptor.teardown();
-    }
+    this.interceptorsManager.deactivate();
   }
   getRoute(urlOrName, method = null) {
     const route = this.router.getRoute(urlOrName, method);
@@ -83,7 +116,6 @@ class ApiMock {
   }
   _interceptor(request) {
     // search for a registered mock route that matches the URL of the request
-    // const route = routes.find(routeMatches(request));
     const route = this.router.route(request);
 
     // if a route is found

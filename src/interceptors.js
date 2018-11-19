@@ -1,5 +1,6 @@
 import { hook, restore } from './MockXMLHTTPRequest';
 
+
 class VueHttpRequestAdapter {
   constructor(request) {
     this.request = request;
@@ -13,13 +14,34 @@ class VueHttpRequestAdapter {
 }
 
 
+class SuperAgentRequestAdapter {
+  constructor(request) {
+    this.request = request;
+  }
+  get url() {
+    return this.request.url;
+  }
+  get method() {
+    return this.request.method;
+  }
+}
+
+
 class Interceptor {
-  constructor(interceptor) {
-    this._interceptor = interceptor;
+  constructor() {
     this._active = false;
   }
   get active() {
     return this._active;
+  }
+  setFn(interceptor) {
+    this._interceptor = interceptor;
+  }
+  setup() {
+    throw new Error('Not implemented');
+  }
+  teardown() {
+    throw new Error('Not implemented');
   }
 }
 
@@ -37,19 +59,20 @@ class AjaxInterceptor extends Interceptor {
 }
 
 class VueHttpInterceptor extends Interceptor {
-  constructor(interceptor) {
-    super(interceptor);
+  constructor(vueHttp) {
+    super();
+    this.vueHttp = vueHttp;
     this.interceptFunc = this.intercept.bind(this);
   }
   setup() {
     if (!this.active) {
-      Vue.http.interceptors.unshift(this.interceptFunc);
+      this.vueHttp.interceptors.unshift(this.interceptFunc);
       this._active = true;
     }
   }
   teardown() {
     if (this.active) {
-      Vue.http.interceptors.shift(this.interceptFunc);
+      this.vueHttp.interceptors.shift(this.interceptFunc);
       this._active = false;
     }
   }
@@ -68,7 +91,67 @@ class VueHttpInterceptor extends Interceptor {
   }
 }
 
+function superAgentResponseAdapter(mockResponse) {
+  return {
+    status: mockResponse.status,
+    body: mockResponse.body,
+    reason: mockResponse.reason,
+  };
+}
+
+
+class SuperAgentInterceptor extends Interceptor {
+  constructor(superagent) {
+    super();
+    this.superagent = superagent;
+  }
+  setup() {
+    if (!this.superagent._isPatched) {
+      this.patch();
+      this.superagent._isPatched = true;
+    }
+    this._active = true;
+  }
+  patch() {
+    const self = this;
+    this.origEnd = this.superagent.Request.prototype.end;
+
+    this.superagent.Request.prototype.end = function end(callback) {
+      function getCallbackArguments(response) {
+        const saResponse = superAgentResponseAdapter(response);
+        let error = null;
+        const status = Number(response.status);
+        if (status < 200 || status > 206) {
+          error = new Error(response.status);
+          error.status = response.status;
+          error.response = saResponse;
+        }
+
+        return [error, error === null ? saResponse : null];
+      }
+
+      const request = new SuperAgentRequestAdapter(this);
+      const response = self._interceptor(request);
+
+      if (response) {
+        const [error, adaptedResponse] = getCallbackArguments(response);
+        callback(error, adaptedResponse);
+      } else {
+        self.origEnd.call(this, callback);
+      }
+    };
+  }
+  teardown() {
+    if (this.superagent._isPatched) {
+      this.superagent.end = this.origEnd;
+    }
+  }
+}
+
+
 export {
+  Interceptor,
   AjaxInterceptor,
   VueHttpInterceptor,
+  SuperAgentInterceptor,
 };

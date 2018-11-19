@@ -63,7 +63,7 @@ function asReg(routeUrl) {
   var urlReg = replacePlaceholders(treatEndSlash(routeUrl), function () {
     return PARAM;
   });
-  return new RegExp('' + urlReg + QUERY_PARAMS);
+  return new RegExp('' + urlReg + QUERY_PARAMS + '$');
 }
 
 function getAbsoluteUrl(url) {

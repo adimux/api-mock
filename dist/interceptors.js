@@ -3,7 +3,9 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.VueHttpInterceptor = exports.AjaxInterceptor = undefined;
+exports.SuperAgentInterceptor = exports.VueHttpInterceptor = exports.AjaxInterceptor = exports.Interceptor = undefined;
+
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -37,15 +39,51 @@ var VueHttpRequestAdapter = function () {
   return VueHttpRequestAdapter;
 }();
 
+var SuperAgentRequestAdapter = function () {
+  function SuperAgentRequestAdapter(request) {
+    _classCallCheck(this, SuperAgentRequestAdapter);
+
+    this.request = request;
+  }
+
+  _createClass(SuperAgentRequestAdapter, [{
+    key: 'url',
+    get: function get() {
+      return this.request.url;
+    }
+  }, {
+    key: 'method',
+    get: function get() {
+      return this.request.method;
+    }
+  }]);
+
+  return SuperAgentRequestAdapter;
+}();
+
 var Interceptor = function () {
-  function Interceptor(interceptor) {
+  function Interceptor() {
     _classCallCheck(this, Interceptor);
 
-    this._interceptor = interceptor;
     this._active = false;
   }
 
   _createClass(Interceptor, [{
+    key: 'setFn',
+    value: function setFn(interceptor) {
+      this._interceptor = interceptor;
+    }
+  }, {
+    key: 'setup',
+    value: function setup() {
+      throw new Error('Not implemented');
+    }
+  }, {
+    key: 'teardown',
+    value: function teardown() {
+      throw new Error('Not implemented');
+    }
+  }, {
     key: 'active',
     get: function get() {
       return this._active;
@@ -86,11 +124,12 @@ var AjaxInterceptor = function (_Interceptor) {
 var VueHttpInterceptor = function (_Interceptor2) {
   _inherits(VueHttpInterceptor, _Interceptor2);
 
-  function VueHttpInterceptor(interceptor) {
+  function VueHttpInterceptor(vueHttp) {
     _classCallCheck(this, VueHttpInterceptor);
 
-    var _this2 = _possibleConstructorReturn(this, (VueHttpInterceptor.__proto__ || Object.getPrototypeOf(VueHttpInterceptor)).call(this, interceptor));
+    var _this2 = _possibleConstructorReturn(this, (VueHttpInterceptor.__proto__ || Object.getPrototypeOf(VueHttpInterceptor)).call(this));
 
+    _this2.vueHttp = vueHttp;
     _this2.interceptFunc = _this2.intercept.bind(_this2);
     return _this2;
   }
@@ -99,7 +138,7 @@ var VueHttpInterceptor = function (_Interceptor2) {
     key: 'setup',
     value: function setup() {
       if (!this.active) {
-        Vue.http.interceptors.unshift(this.interceptFunc);
+        this.vueHttp.interceptors.unshift(this.interceptFunc);
         this._active = true;
       }
     }
@@ -107,7 +146,7 @@ var VueHttpInterceptor = function (_Interceptor2) {
     key: 'teardown',
     value: function teardown() {
       if (this.active) {
-        Vue.http.interceptors.shift(this.interceptFunc);
+        this.vueHttp.interceptors.shift(this.interceptFunc);
         this._active = false;
       }
     }
@@ -133,5 +172,83 @@ var VueHttpInterceptor = function (_Interceptor2) {
   return VueHttpInterceptor;
 }(Interceptor);
 
+function superAgentResponseAdapter(mockResponse) {
+  return {
+    status: mockResponse.status,
+    body: mockResponse.body,
+    reason: mockResponse.reason
+  };
+}
+
+var SuperAgentInterceptor = function (_Interceptor3) {
+  _inherits(SuperAgentInterceptor, _Interceptor3);
+
+  function SuperAgentInterceptor(superagent) {
+    _classCallCheck(this, SuperAgentInterceptor);
+
+    var _this3 = _possibleConstructorReturn(this, (SuperAgentInterceptor.__proto__ || Object.getPrototypeOf(SuperAgentInterceptor)).call(this));
+
+    _this3.superagent = superagent;
+    return _this3;
+  }
+
+  _createClass(SuperAgentInterceptor, [{
+    key: 'setup',
+    value: function setup() {
+      if (!this.superagent._isPatched) {
+        this.patch();
+        this.superagent._isPatched = true;
+      }
+      this._active = true;
+    }
+  }, {
+    key: 'patch',
+    value: function patch() {
+      var self = this;
+      this.origEnd = this.superagent.Request.prototype.end;
+
+      this.superagent.Request.prototype.end = function end(callback) {
+        function getCallbackArguments(response) {
+          var saResponse = superAgentResponseAdapter(response);
+          var error = null;
+          var status = Number(response.status);
+          if (status < 200 || status > 206) {
+            error = new Error(response.status);
+            error.status = response.status;
+            error.response = saResponse;
+          }
+
+          return [error, error === null ? saResponse : null];
+        }
+
+        var request = new SuperAgentRequestAdapter(this);
+        var response = self._interceptor(request);
+
+        if (response) {
+          var _getCallbackArguments = getCallbackArguments(response),
+              _getCallbackArguments2 = _slicedToArray(_getCallbackArguments, 2),
+              error = _getCallbackArguments2[0],
+              adaptedResponse = _getCallbackArguments2[1];
+
+          callback(error, adaptedResponse);
+        } else {
+          self.origEnd.call(this, callback);
+        }
+      };
+    }
+  }, {
+    key: 'teardown',
+    value: function teardown() {
+      if (this.superagent._isPatched) {
+        this.superagent.end = this.origEnd;
+      }
+    }
+  }]);
+
+  return SuperAgentInterceptor;
+}(Interceptor);
+
+exports.Interceptor = Interceptor;
 exports.AjaxInterceptor = AjaxInterceptor;
 exports.VueHttpInterceptor = VueHttpInterceptor;
+exports.SuperAgentInterceptor = SuperAgentInterceptor;
