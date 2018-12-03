@@ -16,50 +16,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-function getQueryString(url) {
-  var startIdx = url.indexOf('?');
-  if (startIdx >= 0) {
-    return url.substring(startIdx + 1);
-  }
-  return '';
-}
-
-function extractQuery(url) {
-  var query = {};
-  var urlParams = new URLSearchParams(getQueryString(url));
-  var _iteratorNormalCompletion = true;
-  var _didIteratorError = false;
-  var _iteratorError = undefined;
-
-  try {
-    for (var _iterator = urlParams.keys()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-      var key = _step.value;
-
-      var value = urlParams.getAll(key);
-      if (value.length === 1) {
-        query[key] = value[0];
-      } else {
-        query[key] = value;
-      }
-    }
-  } catch (err) {
-    _didIteratorError = true;
-    _iteratorError = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion && _iterator.return) {
-        _iterator.return();
-      }
-    } finally {
-      if (_didIteratorError) {
-        throw _iteratorError;
-      }
-    }
-  }
-
-  return query;
-}
-
 var Calls = function () {
   function Calls() {
     var initCalls = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
@@ -126,7 +82,7 @@ var Calls = function () {
           body = request.body;
 
       var params = route.extractParams(request.url);
-      var query = extractQuery(request.url);
+      var query = request.query;
       this.calls.push({
         route: {
           url: route.url,

@@ -1,3 +1,28 @@
+
+function getQueryString(url) {
+  const startIdx = url.indexOf('?');
+  if (startIdx >= 0) {
+    return url.substring(startIdx + 1);
+  }
+  return '';
+}
+
+
+export function extractQuery(url) {
+  const query = {};
+  const urlParams = new URLSearchParams(getQueryString(url));
+  for (const key of urlParams.keys()) {
+    const value = urlParams.getAll(key);
+    if (value.length === 1) {
+      query[key] = value[0];
+    } else {
+      query[key] = value;
+    }
+  }
+  return query;
+}
+
+
 export function defined(value) {
   return typeof value !== 'undefined';
 }

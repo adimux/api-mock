@@ -1,29 +1,6 @@
 import isEqual from 'lodash/isEqual';
 import { sameMethod, parseRequestBody, normalizeParams } from './utils';
 
-function getQueryString(url) {
-  const startIdx = url.indexOf('?');
-  if (startIdx >= 0) {
-    return url.substring(startIdx + 1);
-  }
-  return '';
-}
-
-function extractQuery(url) {
-  const query = {};
-  const urlParams = new URLSearchParams(getQueryString(url));
-  for (const key of urlParams.keys()) {
-    const value = urlParams.getAll(key);
-    if (value.length === 1) {
-      query[key] = value[0];
-    } else {
-      query[key] = value;
-    }
-  }
-  return query;
-}
-
-
 class Calls {
   constructor(initCalls = []) {
     this.calls = initCalls;
@@ -72,7 +49,7 @@ class Calls {
   registerCall(request, route) {
     const { url, method, body } = request;
     const params = route.extractParams(request.url);
-    const query = extractQuery(request.url);
+    const query = request.query;
     this.calls.push({
       route: {
         url: route.url,

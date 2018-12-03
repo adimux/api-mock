@@ -18,7 +18,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var QUERY_PARAMS = '(?:\\?.+|)';
 var ENDING_SLASH = '(?:/|)';
-var PARAM = '([A-Z0-9]*)';
+var PARAM = '([^/]+)';
 var PLACEHOLDER_REGEX = /({(?:[^}]+)})/g;
 
 function clearPlaceholder(placeholder) {

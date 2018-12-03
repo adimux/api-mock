@@ -1,6 +1,6 @@
 {
-  "name": "api-mock",
-  "version": "1.0.0",
+  "name": "@adimux/api-mock",
+  "version": "1.0.1",
   "main": "dist/index.js",
   "description": "Mock HTTP Requests",
   "scripts": {

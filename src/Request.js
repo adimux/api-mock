@@ -1,4 +1,5 @@
 import { defined } from './utils';
+import { extractQuery } from './utils';
 
 class Request {
   constructor(method, url) {
@@ -23,6 +24,9 @@ class Request {
   }
   set body(body) {
     this._body = body;
+  }
+  get query() {
+    return extractQuery(this.url);
   }
 }
 

@@ -1,5 +1,5 @@
 import { hook, restore } from './MockXMLHTTPRequest';
-
+import { extractQuery } from './utils';
 
 class VueHttpRequestAdapter {
   constructor(request) {
@@ -23,6 +23,10 @@ class SuperAgentRequestAdapter {
   }
   get method() {
     return this.request.method;
+  }
+  get query() {
+    const saQuery = this.request.qs || {};
+    return { ...extractQuery(this.url), ...saQuery }
   }
 }
 

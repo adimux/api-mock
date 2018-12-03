@@ -39,6 +39,11 @@ var Request = function () {
     set: function set(body) {
       this._body = body;
     }
+  }, {
+    key: 'query',
+    get: function get() {
+      return (0, _utils.extractQuery)(this.url);
+    }
   }]);
 
   return Request;

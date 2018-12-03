@@ -3,7 +3,7 @@ import { sameMethod, defined } from './utils';
 
 const QUERY_PARAMS = '(?:\\?.+|)';
 const ENDING_SLASH = '(?:/|)';
-const PARAM = '([A-Z0-9]*)';
+const PARAM = '([^/]+)';
 const PLACEHOLDER_REGEX = /({(?:[^}]+)})/g;
 
 function clearPlaceholder(placeholder) {

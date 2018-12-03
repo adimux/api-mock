@@ -3,11 +3,57 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.extractQuery = extractQuery;
 exports.defined = defined;
 exports.assert = assert;
 exports.sameMethod = sameMethod;
 exports.parseRequestBody = parseRequestBody;
 exports.normalizeParams = normalizeParams;
+
+function getQueryString(url) {
+  var startIdx = url.indexOf('?');
+  if (startIdx >= 0) {
+    return url.substring(startIdx + 1);
+  }
+  return '';
+}
+
+function extractQuery(url) {
+  var query = {};
+  var urlParams = new URLSearchParams(getQueryString(url));
+  var _iteratorNormalCompletion = true;
+  var _didIteratorError = false;
+  var _iteratorError = undefined;
+
+  try {
+    for (var _iterator = urlParams.keys()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var key = _step.value;
+
+      var value = urlParams.getAll(key);
+      if (value.length === 1) {
+        query[key] = value[0];
+      } else {
+        query[key] = value;
+      }
+    }
+  } catch (err) {
+    _didIteratorError = true;
+    _iteratorError = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion && _iterator.return) {
+        _iterator.return();
+      }
+    } finally {
+      if (_didIteratorError) {
+        throw _iteratorError;
+      }
+    }
+  }
+
+  return query;
+}
+
 function defined(value) {
   return typeof value !== 'undefined';
 }
