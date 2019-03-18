@@ -5,6 +5,9 @@ import Calls from './Calls';
 import Router from './Router';
 import Route from './Route';
 
+/**
+ * @access private
+ */
 class InterceptorsManager {
   constructor() {
     this.interceptors = [];
@@ -38,6 +41,9 @@ class InterceptorsManager {
   }
 }
 
+/**
+ * @access public
+ */
 class ApiMock {
   constructor() {
     this.router = new Router();
@@ -53,16 +59,20 @@ class ApiMock {
   }
 
   /**
-   * Register a mock route.
+   * Regiters a mock route.
    *
-   * Either (url, response, options) where response can be a status code, a response object containing at least
-   * `body` or a callback function that accepts a request that returns a response object, and `options` which
-   * contains other options lie `method`.
-   *
-   * Or an object containing containing {url, response, method, ...other options}
-   *
-   * If `method` is not specified, any HTTP method will match.
-   */
+   * @param {String} url The URL to mock, optionally containing placeholders, e.g `api/users/{user_id}`
+   * @param {Object|Number|Function} [response=200] The response to return when the URL is requested, as an object (e.g `{ body: { 'foo': 'bar' }, status: 200 }`), or simply a status code (e.g `400`) or a callback function that retusn a response object.
+   * @param {Object} options More options defining the route.
+   * @param {String} options.method The HTTP method for which to register the mock route.
+   * @access public
+   *//**
+   * Registers a mock route.
+   * @param {Object} options Options defining the route.
+   * @param {String} options.url The URL to mock, optionally containing placeholders, e.g `api/users/{user_id}`
+   * @param {String} options.method The HTTP method. If not specified, the URL will be mocked no matter the HTTP method.
+   * @access public
+  */
   mock(...args) {
     // Transform the arguments into options to create the route with
     const options = {};
@@ -83,12 +93,24 @@ class ApiMock {
     // Activate mocking, if it's not the case already
     this.interceptorsManager.activate();
   }
+  /**
+   * Shortcut for `mock`, but sets the HTTP method to `get`.
+   * @access public
+   */
   get(url, response, options = {}) {
     this.mock(url, response, Object.assign({}, options, { method: 'get' }));
   }
+  /**
+   * Shortcut for `mock`, but sets the HTTP method to `post`.
+   * @access public
+   */
   post(url, response, options = {}) {
     this.mock(url, response, Object.assign({}, options, { method: 'post' }));
   }
+  /**
+   * Shortcut for `mock`, but sets the HTTP method to `put`.
+   * @access public
+   */
   put(url, response, options = {}) {
     this.mock(url, response, Object.assign({}, options, { method: 'put' }));
   }
@@ -96,14 +118,29 @@ class ApiMock {
     this.reset();
     this.interceptorsManager.activate();
   }
+  /**
+   * Clears all the routes and clear the history of intercepted API calls.
+   *
+   * @access public
+   */
   reset() {
     this.router.clear();
     this.calls.clear();
   }
+  /**
+   * Restores everything to its original state (i.e unmocks, clears the routes, clears the call registered).
+   *
+   * @access public
+   */
   restore() {
     this.reset();
     this.interceptorsManager.deactivate();
   }
+/**
+ * Get a route by its name (or URL if it doesn't have a name).
+ * @param {string} urlOrName The name of the route, if it has one, or its URL.
+ * @param {string} method The HTTP method of the route, in case multiple routes have the same URL but a different HTTP method. Of course, if the route has a name, there is no need to specify the HTTP method because the name is supposted to be unique.
+ */
   getRoute(urlOrName, method = null) {
     const route = this.router.getRoute(urlOrName, method);
 
@@ -127,6 +164,16 @@ class ApiMock {
     }
     // if no route is found let the request continue executing by not returning anything.
   }
+  /**
+   * Determines whether a route was called with certain request parameters or body.
+   *
+   * @param {string} route The name of the route, or its URL if it doesn't have a name,
+   * @param {Object} options The URL parameters, query parameters or body to filter the calls with.
+   * @param {Object} options.params The URL parameters (i.e the values of the placeholders in the URL of the route) by which the call should have been made.
+   * @param {Object} options.query The query parameters (i.e the parameters after "?") by which the call should have been made.
+   * @param {Object} options.body The body by which the call should have been made.
+   * @return {Boolean} True if the route was called with those options, False if not.
+   */
   called(route, options) {
     return this.calls.called(route, options);
   }

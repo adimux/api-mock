@@ -31,5 +31,8 @@
     ]
   },
   "author": "adimux",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "jsdoc": "^3.5.5"
+  }
 }
