@@ -9,6 +9,7 @@ exports.assert = assert;
 exports.sameMethod = sameMethod;
 exports.parseRequestBody = parseRequestBody;
 exports.normalizeParams = normalizeParams;
+exports.formDataToObject = formDataToObject;
 
 function getQueryString(url) {
   var startIdx = url.indexOf('?');
@@ -95,4 +96,20 @@ function normalizeParams(params) {
     normalized[key] = normalizeValue(params[key]);
   });
   return normalized;
+}
+
+function formDataToObject(formData) {
+  var output = {};
+  formData.forEach(function (value, key) {
+    if (Object.prototype.hasOwnProperty.call(output, key)) {
+      var current = output[key];
+      if (!Array.isArray(current)) {
+        current = output[key] = [current];
+      }
+      current.push(value);
+    } else {
+      output[key] = value;
+    }
+  });
+  return output;
 }

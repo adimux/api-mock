@@ -16,6 +16,20 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+function isFormData(obj) {
+  if (window && window.FormData) {
+    return obj instanceof window.FormData;
+  }
+  return false;
+}
+
+function normalizeBody(body) {
+  if (isFormData(body)) {
+    return (0, _utils.formDataToObject)(body);
+  }
+  return body;
+}
+
 var Calls = function () {
   function Calls() {
     var initCalls = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
@@ -46,7 +60,7 @@ var Calls = function () {
         if (options.query && !(0, _isEqual2.default)(call.query, (0, _utils.normalizeParams)(options.query))) {
           return false;
         }
-        if (options.body && !(0, _isEqual2.default)(call.body, options.body)) {
+        if (options.body && !(0, _isEqual2.default)(normalizeBody(call.body), normalizeBody(options.body))) {
           return false;
         }
         return true;
@@ -69,7 +83,7 @@ var Calls = function () {
     key: 'lastCall',
     value: function lastCall(route, options) {
       var calls = this.filter(route, options);
-      if (calls.lengh > 0) {
+      if (calls.length > 0) {
         return calls.pop();
       }
       return null;
