@@ -62,14 +62,15 @@ class ApiMock {
    * Regiters a mock route.
    *
    * @param {String} url The URL to mock, optionally containing placeholders, e.g `api/users/{user_id}`
-   * @param {Object|Number|Function} [response=200] The response to return when the URL is requested, as an object (e.g `{ body: { 'foo': 'bar' }, status: 200 }`), or simply a status code (e.g `400`) or a callback function that retusn a response object.
+   * @param {Object|Number|Function} response=200 The response to return when the URL is requested, as an object (e.g `{ body: { 'foo': 'bar' }, status: 200 }`), or simply a status code (e.g `400`) or a callback function that returns a response object.
    * @param {Object} options More options defining the route.
-   * @param {String} options.method The HTTP method for which to register the mock route.
+   * @param {String} options.method The HTTP method the route responds to.
    * @access public
    *//**
    * Registers a mock route.
    * @param {Object} options Options defining the route.
    * @param {String} options.url The URL to mock, optionally containing placeholders, e.g `api/users/{user_id}`
+   * @param {Object|Number|Function} options.response=200 The response to return when the URL is requested, as an object (e.g `{ body: { 'foo': 'bar' }, status: 200 }`), or simply a status code (e.g `400`) or a callback function that returns a response object.
    * @param {String} options.method The HTTP method. If not specified, the URL will be mocked no matter the HTTP method.
    * @access public
   */
@@ -95,6 +96,9 @@ class ApiMock {
   }
   /**
    * Shortcut for `mock`, but sets the HTTP method to `get`.
+   * @param {String} url The URL to mock, optionally containing placeholders, e.g `api/users/{user_id}`
+   * @param {Object|Number|Function} response=200 The response to return when the URL is requested, as an object (e.g `{ body: { 'foo': 'bar' }, status: 200 }`), or simply a status code (e.g `400`) or a callback function that returns a response object.
+   *
    * @access public
    */
   get(url, response, options = {}) {
@@ -102,6 +106,8 @@ class ApiMock {
   }
   /**
    * Shortcut for `mock`, but sets the HTTP method to `post`.
+   * @param {String} url The URL to mock, optionally containing placeholders, e.g `api/users/{user_id}`
+   * @param {Object|Number|Function} response=200 The response to return when the URL is requested, as an object (e.g `{ body: { 'foo': 'bar' }, status: 200 }`), or simply a status code (e.g `400`) or a callback function that returns a response object.
    * @access public
    */
   post(url, response, options = {}) {
@@ -109,6 +115,8 @@ class ApiMock {
   }
   /**
    * Shortcut for `mock`, but sets the HTTP method to `put`.
+   * @param {String} url The URL to mock, optionally containing placeholders, e.g `api/users/{user_id}`
+   * @param {Object|Number|Function} response=200 The response to return when the URL is requested, as an object (e.g `{ body: { 'foo': 'bar' }, status: 200 }`), or simply a status code (e.g `400`) or a callback function that returns a response object.
    * @access public
    */
   put(url, response, options = {}) {
@@ -139,7 +147,7 @@ class ApiMock {
 /**
  * Get a route by its name (or URL if it doesn't have a name).
  * @param {string} urlOrName The name of the route, if it has one, or its URL.
- * @param {string} method The HTTP method of the route, in case multiple routes have the same URL but a different HTTP method. Of course, if the route has a name, there is no need to specify the HTTP method because the name is supposted to be unique.
+ * @param {string} method The HTTP method of the route, in case multiple routes have the same URL but a different HTTP method. If you pass `null` and you are searching by URL, the first route that matches the URL will be returned. Of course, if the route has a name, there is no need to specify the HTTP method because the name is supposed to be unique.
  */
   getRoute(urlOrName, method = null) {
     const route = this.router.getRoute(urlOrName, method);
@@ -165,11 +173,11 @@ class ApiMock {
     // if no route is found let the request continue executing by not returning anything.
   }
   /**
-   * Determines whether a route was called with certain request parameters or body.
+   * Determines whether a route was called with a specific body or specific query / URL parameters.
    *
    * @param {string} route The name of the route, or its URL if it doesn't have a name,
    * @param {Object} options The URL parameters, query parameters or body to filter the calls with.
-   * @param {Object} options.params The URL parameters (i.e the values of the placeholders in the URL of the route) by which the call should have been made.
+   * @param {Object} options.params The URL parameters (i.e the values of the placeholders in the URL of the route like `user_id` in `api/users/{user_id}`) by which the call should have been made.
    * @param {Object} options.query The query parameters (i.e the parameters after "?") by which the call should have been made.
    * @param {Object} options.body The body by which the call should have been made.
    * @return {Boolean} True if the route was called with those options, False if not.

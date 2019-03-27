@@ -1,6 +1,6 @@
 {
   "name": "@adimux/api-mock",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "dist/index.js",
   "description": "Mock HTTP Requests",
   "scripts": {
@@ -20,6 +20,7 @@
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
     "jest": "^22.4.4",
+    "jsdoc-to-markdown": "^4.0.1",
     "regenerator-runtime": "^0.12.1"
   },
   "jest": {
