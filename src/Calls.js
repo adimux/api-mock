@@ -1,5 +1,19 @@
 import isEqual from 'lodash/isEqual';
-import { sameMethod, parseRequestBody, normalizeParams } from './utils';
+import { sameMethod, parseRequestBody, normalizeParams, formDataToObject } from './utils';
+
+function isFormData(obj) {
+  if (window && window.FormData) {
+    return obj instanceof window.FormData;
+  }
+  return false;
+}
+
+function normalizeBody(body) {
+  if (isFormData(body)) {
+    return formDataToObject(body);
+  }
+  return body;
+}
 
 class Calls {
   constructor(initCalls = []) {
@@ -22,7 +36,7 @@ class Calls {
       if (options.query && !isEqual(call.query, normalizeParams(options.query))) {
         return false;
       }
-      if (options.body && !isEqual(call.body, options.body)) {
+      if (options.body && !isEqual(normalizeBody(call.body), normalizeBody(options.body))) {
         return false;
       }
       return true;
@@ -41,7 +55,7 @@ class Calls {
   }
   lastCall(route, options) {
     const calls = this.filter(route, options);
-    if (calls.lengh > 0) {
+    if (calls.length > 0) {
       return calls.pop();
     }
     return null;
