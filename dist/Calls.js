@@ -45,7 +45,7 @@ var Calls = function () {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
       function routeMatches(call) {
-        if (typeof route === 'undefined') {
+        if (typeof urlOrName === 'undefined') {
           return true;
         }
         return call.route.url === urlOrName || call.route.name === urlOrName;

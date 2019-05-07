@@ -21,7 +21,7 @@ class Calls {
   }
   filter(urlOrName, options = {}) {
     function routeMatches(call) {
-      if (typeof route === 'undefined') {
+      if (typeof urlOrName === 'undefined') {
         return true;
       }
       return call.route.url === urlOrName || call.route.name === urlOrName;
