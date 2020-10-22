@@ -61,6 +61,11 @@ var SuperAgentRequestAdapter = function () {
       return this.request.method;
     }
   }, {
+    key: 'body',
+    get: function get() {
+      return this.request._data;
+    }
+  }, {
     key: 'query',
     get: function get() {
       var saQuery = this.request.qs || {};

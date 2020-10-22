@@ -24,6 +24,9 @@ class SuperAgentRequestAdapter {
   get method() {
     return this.request.method;
   }
+  get body() {
+    return this.request._data;
+  }
   get query() {
     const saQuery = this.request.qs || {};
     return { ...extractQuery(this.url), ...saQuery }
