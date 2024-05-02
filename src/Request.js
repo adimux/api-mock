@@ -1,3 +1,6 @@
+/* SPDX-License-Identifier: MIT */
+/* Copyright © 2018-2024 Adam Cherti <adamcherti@gmail.com> */
+
 import { defined } from './utils';
 import { extractQuery } from './utils';
 
