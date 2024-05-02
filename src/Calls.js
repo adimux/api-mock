@@ -1,3 +1,6 @@
+/* SPDX-License-Identifier: MIT */
+/* Copyright © 2018-2024 Adam Cherti <adamcherti@gmail.com> */
+
 import isEqual from 'lodash/isEqual';
 import { sameMethod, parseRequestBody, normalizeParams, formDataToObject } from './utils';
 
